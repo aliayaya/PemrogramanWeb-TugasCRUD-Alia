@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { logout, getUser } from "@/lib/auth";
 import {
   getProduk,
   createProduk,
@@ -21,6 +22,9 @@ export default function ProdukPage() {
   const [produk, setProduk] = useState<Produk[]>([]);
   const [selectedProduk, setSelectedProduk] = useState<Produk | null>(null);
   const [form, setForm] = useState<ProdukInput>(initialForm);
+  
+  // Auth State
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // UI States
   const [loading, setLoading] = useState(true);
@@ -36,8 +40,8 @@ export default function ProdukPage() {
       setProduk(data);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : "Gagal memuat data produk";
-      if (errMsg.includes("Failed to fetch") || errMsg.includes("fetch failed")) {
-        setError("Koneksi gagal: Server backend tidak aktif. Harap jalankan server backend terlebih dahulu.");
+      if (errMsg.includes("Failed to fetch") || errMsg.includes("fetch failed") || errMsg.includes("Token tidak valid")) {
+        setError("Koneksi gagal atau sesi habis. Harap login kembali atau nyalakan backend.");
       } else {
         setError(errMsg);
       }
@@ -47,6 +51,12 @@ export default function ProdukPage() {
   };
 
   useEffect(() => {
+    const user = getUser();
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+    setCurrentUser(user);
     loadProduk();
   }, []);
 
@@ -107,12 +117,24 @@ export default function ProdukPage() {
       <div className="card header" style={{ padding: "30px 40px", marginBottom: "30px", borderBottom: "none" }}>
         <div>
           <h1 style={{ marginBottom: "8px" }}>Pusat Kelola Produk</h1>
-          <p style={{ margin: 0 }}>Kelola inventaris dan stok barang produk Anda secara langsung.</p>
+          <p style={{ margin: 0 }}>
+            Kelola inventaris dan stok barang produk Anda secara langsung.
+            {currentUser && (
+              <span style={{ marginLeft: "10px", color: "var(--primary)", fontWeight: "600" }}>
+                (Masuk sebagai: {currentUser.name})
+              </span>
+            )}
+          </p>
         </div>
 
-        <Link href="/">
-          <button className="btn-secondary">Kembali Ke Home</button>
-        </Link>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link href="/">
+            <button className="btn-secondary">Beranda</button>
+          </Link>
+          <button className="btn-danger" onClick={logout} style={{ padding: "10px 20px" }}>
+            Logout
+          </button>
+        </div>
       </div>
 
       {message && <div className="message">{message}</div>}

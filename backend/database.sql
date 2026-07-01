@@ -42,3 +42,19 @@ INSERT IGNORE INTO produk (id, nama, harga, stok) VALUES
 (1, 'Buku Pemrograman Web', 75000, 50),
 (2, 'Mouse Wireless Logitech', 120000, 30),
 (3, 'Keyboard Mechanical Keychron', 1500000, 10);
+
+-- Create users table
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role ENUM('admin', 'operator', 'viewer') NOT NULL DEFAULT 'viewer',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Seed default users
+INSERT IGNORE INTO users (id, name, email, password, role) VALUES
+(1, 'Admin Kampus', 'admin@kampus.com', '$2b$10$46AKmroYDGtcBLDQ/WYGDu5MSUZKGji6FtV1OEJFmU01t7RVfuUyG', 'admin'),
+(2, 'Operator Kampus', 'operator@kampus.com', '$2b$10$46AKmroYDGtcBLDQ/WYGDu5MSUZKGji6FtV1OEJFmU01t7RVfuUyG', 'operator');

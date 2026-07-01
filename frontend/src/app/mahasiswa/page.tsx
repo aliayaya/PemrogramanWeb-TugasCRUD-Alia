@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import MahasiswaForm from "@/components/MahasiswaForm";
 import MahasiswaTable from "@/components/MahasiswaTable";
+import { logout, getUser } from "@/lib/auth";
 import {
   createMahasiswa,
   deleteMahasiswa,
@@ -19,6 +20,9 @@ export default function MahasiswaPage() {
   const [prodis, setProdis] = useState<Prodi[]>([]);
   const [selectedMahasiswa, setSelectedMahasiswa] = useState<Mahasiswa | null>(null);
   
+  // Auth State
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
   // Search & Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProdiFilter, setSelectedProdiFilter] = useState("");
@@ -58,9 +62,8 @@ export default function MahasiswaPage() {
       setTotalItems(res.pagination.totalItems);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : "Gagal memuat data mahasiswa";
-      // Detect connection failures (Tugas 4 requirement)
-      if (errMsg.includes("Failed to fetch") || errMsg.includes("fetch failed")) {
-        setError("Koneksi gagal: Server backend tidak aktif. Harap jalankan server backend terlebih dahulu (npm run dev di folder backend).");
+      if (errMsg.includes("Failed to fetch") || errMsg.includes("fetch failed") || errMsg.includes("Token tidak valid")) {
+        setError("Koneksi gagal atau sesi habis. Harap login kembali atau nyalakan backend.");
       } else {
         setError(errMsg);
       }
@@ -70,6 +73,12 @@ export default function MahasiswaPage() {
   };
 
   useEffect(() => {
+    const user = getUser();
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+    setCurrentUser(user);
     loadProdis();
     loadMahasiswa(1);
   }, [selectedProdiFilter]);
@@ -104,7 +113,6 @@ export default function MahasiswaPage() {
       await deleteMahasiswa(id);
       setMessage("Data mahasiswa berhasil dihapus.");
       
-      // If we deleted the last item on the page, go to the previous page
       const nextPage = (mahasiswa.length === 1 && currentPage > 1) ? currentPage - 1 : currentPage;
       await loadMahasiswa(nextPage);
     } catch (err) {
@@ -118,7 +126,6 @@ export default function MahasiswaPage() {
     }
   };
 
-  // Tugas 3 requirement: Client-side searching using filter()
   const displayedMahasiswa = mahasiswa.filter((m) =>
     m.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
     m.nim.toLowerCase().includes(searchQuery.toLowerCase())
@@ -129,12 +136,24 @@ export default function MahasiswaPage() {
       <div className="card header" style={{ padding: "30px 40px", marginBottom: "30px", borderBottom: "none" }}>
         <div>
           <h1 style={{ marginBottom: "8px" }}>Dashboard Mahasiswa</h1>
-          <p style={{ margin: 0 }}>Kelola pusat informasi mahasiswa Anda secara real-time.</p>
+          <p style={{ margin: 0 }}>
+            Kelola pusat informasi mahasiswa Anda secara real-time.
+            {currentUser && (
+              <span style={{ marginLeft: "10px", color: "var(--primary)", fontWeight: "600" }}>
+                (Masuk sebagai: {currentUser.name})
+              </span>
+            )}
+          </p>
         </div>
 
-        <Link href="/">
-          <button className="btn-secondary">Kembali Ke Home</button>
-        </Link>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link href="/">
+            <button className="btn-secondary">Beranda</button>
+          </Link>
+          <button className="btn-danger" onClick={logout} style={{ padding: "10px 20px" }}>
+            Logout
+          </button>
+        </div>
       </div>
 
       {message && <div className="message">{message}</div>}

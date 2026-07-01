@@ -1,7 +1,8 @@
+import { getToken } from "./auth";
+
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// Set base URL for static uploads (photos)
 export const UPLOADS_URL =
   API_URL.replace("/api", "/uploads/mahasiswa");
 
@@ -40,6 +41,19 @@ type ApiResponse<T> = {
   data?: T;
 };
 
+// Helper for HTTP headers
+function getHeaders(contentType?: string): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (contentType) {
+    headers["Content-Type"] = contentType;
+  }
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   const result = await response.json();
 
@@ -50,7 +64,6 @@ async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
   return result;
 }
 
-// Student Pagination Response
 export type MahasiswaListResponse = {
   data: Mahasiswa[];
   pagination: {
@@ -78,6 +91,7 @@ export async function getMahasiswa(params?: {
 
   const response = await fetch(url, {
     cache: "no-store",
+    headers: getHeaders(),
   });
 
   const result = await response.json();
@@ -96,7 +110,8 @@ export async function createMahasiswa(
 ): Promise<Mahasiswa> {
   const response = await fetch(`${API_URL}/mahasiswa`, {
     method: "POST",
-    body: payload, // Multer/FormData automatically boundary
+    headers: getHeaders(), // Note: no Content-Type for FormData
+    body: payload,
   });
 
   const result = await handleResponse<Mahasiswa>(response);
@@ -109,7 +124,8 @@ export async function updateMahasiswa(
 ): Promise<void> {
   const response = await fetch(`${API_URL}/mahasiswa/${id}`, {
     method: "PUT",
-    body: payload, // Multer/FormData automatically boundary
+    headers: getHeaders(), // Note: no Content-Type for FormData
+    body: payload,
   });
 
   await handleResponse(response);
@@ -118,24 +134,25 @@ export async function updateMahasiswa(
 export async function deleteMahasiswa(id: number): Promise<void> {
   const response = await fetch(`${API_URL}/mahasiswa/${id}`, {
     method: "DELETE",
+    headers: getHeaders(),
   });
 
   await handleResponse(response);
 }
 
-// Prodi Helpers
 export async function getProdi(): Promise<Prodi[]> {
   const response = await fetch(`${API_URL}/prodi`, {
     cache: "no-store",
+    headers: getHeaders(),
   });
   const result = await handleResponse<Prodi[]>(response);
   return result.data || [];
 }
 
-// Produk Helpers
 export async function getProduk(): Promise<Produk[]> {
   const response = await fetch(`${API_URL}/produk`, {
     cache: "no-store",
+    headers: getHeaders(),
   });
   const result = await handleResponse<Produk[]>(response);
   return result.data || [];
@@ -144,9 +161,7 @@ export async function getProduk(): Promise<Produk[]> {
 export async function createProduk(payload: ProdukInput): Promise<Produk> {
   const response = await fetch(`${API_URL}/produk`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getHeaders("application/json"),
     body: JSON.stringify(payload),
   });
   const result = await handleResponse<Produk>(response);
@@ -159,9 +174,7 @@ export async function updateProduk(
 ): Promise<void> {
   const response = await fetch(`${API_URL}/produk/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: getHeaders("application/json"),
     body: JSON.stringify(payload),
   });
   await handleResponse(response);
@@ -170,6 +183,8 @@ export async function updateProduk(
 export async function deleteProduk(id: number): Promise<void> {
   const response = await fetch(`${API_URL}/produk/${id}`, {
     method: "DELETE",
+    headers: getHeaders(),
   });
+
   await handleResponse(response);
 }
