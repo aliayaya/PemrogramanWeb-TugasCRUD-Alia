@@ -32,6 +32,12 @@ export default function ProdukPage() {
   const [error, setError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
 
+  // Role Permissions
+  const role = currentUser?.role;
+  const canCreate = role === "admin" || role === "operator";
+  const canEdit = role === "admin" || role === "operator";
+  const canDelete = role === "admin";
+
   const loadProduk = async () => {
     try {
       setLoading(true);
@@ -141,67 +147,69 @@ export default function ProdukPage() {
       {error && <div className="message error">{error}</div>}
 
       {/* Form Card */}
-      <form onSubmit={handleSubmit} className="card">
-        <h2 style={{ color: "var(--foreground)", marginTop: 0 }}>
-          {selectedProduk ? "Edit Produk" : "Tambah Produk Baru"}
-        </h2>
+      {canCreate && (
+        <form onSubmit={handleSubmit} className="card">
+          <h2 style={{ color: "var(--foreground)", marginTop: 0 }}>
+            {selectedProduk ? "Edit Produk" : "Tambah Produk Baru"}
+          </h2>
 
-        <div className="grid">
-          <div className="form-group">
-            <label htmlFor="nama">Nama Produk</label>
-            <input
-              id="nama"
-              type="text"
-              value={form.nama}
-              onChange={(e) => setForm({ ...form, nama: e.target.value })}
-              placeholder="Contoh: Mouse Wireless Logitech"
-              required
-            />
+          <div className="grid">
+            <div className="form-group">
+              <label htmlFor="nama">Nama Produk</label>
+              <input
+                id="nama"
+                type="text"
+                value={form.nama}
+                onChange={(e) => setForm({ ...form, nama: e.target.value })}
+                placeholder="Contoh: Mouse Wireless Logitech"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="harga">Harga (Rp)</label>
+              <input
+                id="harga"
+                type="number"
+                value={form.harga}
+                onChange={(e) => setForm({ ...form, harga: Number(e.target.value) })}
+                placeholder="120000"
+                min="0"
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ gridColumn: "span 2" }}>
+              <label htmlFor="stok">Stok Barang</label>
+              <input
+                id="stok"
+                type="number"
+                value={form.stok}
+                onChange={(e) => setForm({ ...form, stok: Number(e.target.value) })}
+                placeholder="50"
+                min="0"
+                required
+              />
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="harga">Harga (Rp)</label>
-            <input
-              id="harga"
-              type="number"
-              value={form.harga}
-              onChange={(e) => setForm({ ...form, harga: Number(e.target.value) })}
-              placeholder="120000"
-              min="0"
-              required
-            />
-          </div>
-
-          <div className="form-group" style={{ gridColumn: "span 2" }}>
-            <label htmlFor="stok">Stok Barang</label>
-            <input
-              id="stok"
-              type="number"
-              value={form.stok}
-              onChange={(e) => setForm({ ...form, stok: Number(e.target.value) })}
-              placeholder="50"
-              min="0"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="actions" style={{ marginTop: "20px" }}>
-          <button type="submit" className="btn-primary" disabled={formLoading}>
-            {formLoading ? "Menyimpan..." : selectedProduk ? "Simpan Perubahan" : "Tambah Produk"}
-          </button>
-
-          {selectedProduk && (
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => setSelectedProduk(null)}
-            >
-              Batal
+          <div className="actions" style={{ marginTop: "20px" }}>
+            <button type="submit" className="btn-primary" disabled={formLoading}>
+              {formLoading ? "Menyimpan..." : selectedProduk ? "Simpan Perubahan" : "Tambah Produk"}
             </button>
-          )}
-        </div>
-      </form>
+
+            {selectedProduk && (
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setSelectedProduk(null)}
+              >
+                Batal
+              </button>
+            )}
+          </div>
+        </form>
+      )}
 
       {/* List Table Card */}
       <section className="card" style={{ marginTop: 30 }}>
@@ -222,7 +230,7 @@ export default function ProdukPage() {
                 <th>Nama Produk</th>
                 <th>Harga (Rp)</th>
                 <th>Stok</th>
-                <th>Aksi</th>
+                {(canEdit || canDelete) && <th>Aksi</th>}
               </tr>
             </thead>
             <tbody>
@@ -232,22 +240,28 @@ export default function ProdukPage() {
                   <td style={{ fontWeight: 500, color: "var(--foreground)" }}>{item.nama}</td>
                   <td>{item.harga.toLocaleString("id-ID")}</td>
                   <td>{item.stok} unit</td>
-                  <td>
-                    <div className="actions">
-                      <button
-                        className="btn-secondary"
-                        onClick={() => setSelectedProduk(item)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn-danger"
-                        onClick={() => handleDelete(item.id)}
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                  </td>
+                  {(canEdit || canDelete) && (
+                    <td>
+                      <div className="actions">
+                        {canEdit && (
+                          <button
+                            className="btn-secondary"
+                            onClick={() => setSelectedProduk(item)}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            className="btn-danger"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            Hapus
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

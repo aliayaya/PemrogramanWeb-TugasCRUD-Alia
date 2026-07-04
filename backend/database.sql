@@ -57,4 +57,5 @@ CREATE TABLE IF NOT EXISTS users (
 -- Seed default users
 INSERT IGNORE INTO users (id, name, email, password, role) VALUES
 (1, 'Admin Kampus', 'admin@kampus.com', '$2b$10$46AKmroYDGtcBLDQ/WYGDu5MSUZKGji6FtV1OEJFmU01t7RVfuUyG', 'admin'),
-(2, 'Operator Kampus', 'operator@kampus.com', '$2b$10$46AKmroYDGtcBLDQ/WYGDu5MSUZKGji6FtV1OEJFmU01t7RVfuUyG', 'operator');
+(2, 'Operator Kampus', 'operator@kampus.com', '$2b$10$46AKmroYDGtcBLDQ/WYGDu5MSUZKGji6FtV1OEJFmU01t7RVfuUyG', 'operator'),
+(3, 'Viewer Kampus', 'viewer@kampus.com', '$2b$10$46AKmroYDGtcBLDQ/WYGDu5MSUZKGji6FtV1OEJFmU01t7RVfuUyG', 'viewer');

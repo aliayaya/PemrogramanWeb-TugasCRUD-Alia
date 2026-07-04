@@ -7,12 +7,23 @@ type Props = {
   onEdit: (item: Mahasiswa) => void;
   onDelete: (id: number) => Promise<void>;
   startIndex?: number;
+  canEdit?: boolean;
+  canDelete?: boolean;
 };
 
-export default function MahasiswaTable({ mahasiswa, onEdit, onDelete, startIndex = 0 }: Props) {
+export default function MahasiswaTable({
+  mahasiswa,
+  onEdit,
+  onDelete,
+  startIndex = 0,
+  canEdit = true,
+  canDelete = true,
+}: Props) {
   if (mahasiswa.length === 0) {
     return <p style={{ color: "var(--text-muted)", padding: "20px 0", textAlign: "center" }}>Belum ada data mahasiswa.</p>;
   }
+
+  const showAksiColumn = canEdit || canDelete;
 
   return (
     <table>
@@ -24,7 +35,7 @@ export default function MahasiswaTable({ mahasiswa, onEdit, onDelete, startIndex
           <th>Nama</th>
           <th>Prodi</th>
           <th>Angkatan</th>
-          <th>Aksi</th>
+          {showAksiColumn && <th>Aksi</th>}
         </tr>
       </thead>
 
@@ -69,17 +80,23 @@ export default function MahasiswaTable({ mahasiswa, onEdit, onDelete, startIndex
             <td style={{ fontWeight: 500, color: "var(--foreground)" }}>{item.nama}</td>
             <td>{item.nama_prodi || "Belum ditentukan"}</td>
             <td>{item.angkatan}</td>
-            <td>
-              <div className="actions">
-                <button className="btn-secondary" onClick={() => onEdit(item)}>
-                  Edit
-                </button>
+            {showAksiColumn && (
+              <td>
+                <div className="actions">
+                  {canEdit && (
+                    <button className="btn-secondary" onClick={() => onEdit(item)}>
+                      Edit
+                    </button>
+                  )}
 
-                <button className="btn-danger" onClick={() => onDelete(item.id)}>
-                  Hapus
-                </button>
-              </div>
-            </td>
+                  {canDelete && (
+                    <button className="btn-danger" onClick={() => onDelete(item.id)}>
+                      Hapus
+                    </button>
+                  )}
+                </div>
+              </td>
+            )}
           </tr>
         ))}
       </tbody>

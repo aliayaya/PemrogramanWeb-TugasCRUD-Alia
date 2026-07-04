@@ -38,6 +38,12 @@ export default function MahasiswaPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Role Permissions
+  const role = currentUser?.role;
+  const canCreate = role === "admin" || role === "operator";
+  const canEdit = role === "admin" || role === "operator";
+  const canDelete = role === "admin";
+
   const loadProdis = async () => {
     try {
       const data = await getProdi();
@@ -159,11 +165,13 @@ export default function MahasiswaPage() {
       {message && <div className="message">{message}</div>}
       {error && <div className="message error">{error}</div>}
 
-      <MahasiswaForm
-        selectedMahasiswa={selectedMahasiswa}
-        onSubmit={handleSubmit}
-        onCancelEdit={() => setSelectedMahasiswa(null)}
-      />
+      {canCreate && (
+        <MahasiswaForm
+          selectedMahasiswa={selectedMahasiswa}
+          onSubmit={handleSubmit}
+          onCancelEdit={() => setSelectedMahasiswa(null)}
+        />
+      )}
 
       <section className="card" style={{ marginTop: 30 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", marginBottom: "20px" }}>
@@ -208,6 +216,8 @@ export default function MahasiswaPage() {
               onEdit={setSelectedMahasiswa}
               onDelete={handleDelete}
               startIndex={(currentPage - 1) * limit}
+              canEdit={canEdit}
+              canDelete={canDelete}
             />
 
             {/* Pagination Controls */}
