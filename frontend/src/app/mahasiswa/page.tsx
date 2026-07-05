@@ -153,6 +153,13 @@ export default function MahasiswaPage() {
         </div>
 
         <div style={{ display: "flex", gap: "10px" }}>
+          {currentUser && currentUser.role === "admin" && (
+            <Link href="/users">
+              <button className="btn-secondary" style={{ color: "#2563eb", borderColor: "#bfdbfe" }}>
+                Kelola User
+              </button>
+            </Link>
+          )}
           <Link href="/">
             <button className="btn-secondary">Beranda</button>
           </Link>

@@ -188,3 +188,68 @@ export async function deleteProduk(id: number): Promise<void> {
 
   await handleResponse(response);
 }
+
+export type User = {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "operator" | "viewer";
+  created_at?: string;
+};
+
+export type UserInput = {
+  name: string;
+  email: string;
+  password?: string;
+  role: "admin" | "operator" | "viewer";
+};
+
+export async function getUsers(): Promise<User[]> {
+  const response = await fetch(`${API_URL}/users`, {
+    cache: "no-store",
+    headers: getHeaders(),
+  });
+  const result = await handleResponse<User[]>(response);
+  return result.data || [];
+}
+
+export async function createUserByAdmin(payload: UserInput): Promise<void> {
+  const response = await fetch(`${API_URL}/users`, {
+    method: "POST",
+    headers: getHeaders("application/json"),
+    body: JSON.stringify(payload),
+  });
+  await handleResponse(response);
+}
+
+export async function updateUserByAdmin(
+  id: number,
+  payload: { name: string; email: string; role: "admin" | "operator" | "viewer" }
+): Promise<void> {
+  const response = await fetch(`${API_URL}/users/${id}`, {
+    method: "PUT",
+    headers: getHeaders("application/json"),
+    body: JSON.stringify(payload),
+  });
+  await handleResponse(response);
+}
+
+export async function deleteUserByAdmin(id: number): Promise<void> {
+  const response = await fetch(`${API_URL}/users/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  await handleResponse(response);
+}
+
+export async function resetUserPassword(id: number): Promise<string> {
+  const response = await fetch(`${API_URL}/users/${id}/reset-password`, {
+    method: "PATCH",
+    headers: getHeaders(),
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || "Gagal mereset password");
+  }
+  return result.temporaryPassword;
+}
